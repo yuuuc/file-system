@@ -11,3 +11,7 @@ export const saveFileName = (name: string) => {
 export const getFileName = (pageNum: number = 0, pageSize: number = 10) => {
   return data.slice(pageNum, pageSize)
 }
+
+export const hasFileName = (name: string) => {
+  return data.includes(name)
+}

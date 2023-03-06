@@ -2,7 +2,7 @@ import express, { Express, Request, Response } from 'express'
 const router = express.Router()
 import fs from 'fs'
 import { FILE_PATH } from '../../config/index'
-import { saveFileName } from '../server/fileService'
+import { saveFileName, hasFileName } from '../server/fileService'
 const multer = require('multer')
 
 const storage = multer.diskStorage({
@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage: storage }).single('file')
 
-router.post('/upload', upload, function (req: Request, res, next) {
+router.post('/file/upload', upload, function (req: Request, res, next) {
   try {
     const file = (req as any).file
     if (file) {
@@ -38,11 +38,18 @@ router.post('/upload', upload, function (req: Request, res, next) {
 })
 
 router.get('/media', function (req, res) {
-  const name = req.query.name
-  fs.readFile(FILE_PATH + name, (err, data) => {
-    res.setHeader('conten-type', 'image/png')
-    res.write(data, 'binary')
-  })
+  const name = req.query.name as string
+  if (hasFileName(name)) {
+    fs.readFile(FILE_PATH + name, (err, data) => {
+      res.statusCode = 200
+      res.setHeader('conten-type', 'image/png')
+      res.write(data, 'binary')
+      res.end()
+    })
+  } else {
+    res.statusCode = 404
+    res.end()
+  }
 })
 
 export default router
