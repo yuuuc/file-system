@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express'
+import express, { Express, Request, Response, query } from 'express'
 const router = express.Router()
 const mime = require('mime')
 import { FILE_PATH } from '../../config/index'
@@ -65,13 +65,28 @@ router.get('/media', function (req, res) {
     .catch((e) => {})
 })
 
-router.get('/media/list', function (req, res) {
-  const query = req.query
-  res.send({
-    success: true,
-    type: 'page',
-    data: getFileList()
-  })
-})
+router.get(
+  '/media/list',
+  function (
+    req: Request<
+      never,
+      any,
+      never,
+      {
+        pageNum: number
+        pageSize: number
+      },
+      never
+    >,
+    res
+  ) {
+    const query = req.query
+    res.send({
+      success: true,
+      type: 'page',
+      data: getFileList(query.pageNum, query.pageSize)
+    })
+  }
+)
 
 export default router
