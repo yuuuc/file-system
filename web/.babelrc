@@ -1,0 +1,20 @@
+{
+  "plugins": ["@babel/plugin-transform-runtime"], // 使用async await 需要依赖
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": false
+      }
+    ],
+    "@babel/preset-react",
+    // ts 解析，暂不添加
+    [
+      "@babel/preset-typescript",
+      {
+        "isTSX": true,
+        "allExtensions": true
+      }
+    ]
+  ]
+}
