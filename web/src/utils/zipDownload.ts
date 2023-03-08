@@ -1,6 +1,8 @@
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
 
+// loading
+// https://www.jianshu.com/p/a1f09b640732
 /**
  单个图片文件下载
 **/
