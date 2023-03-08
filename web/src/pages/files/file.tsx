@@ -1,6 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
+import { Image, message } from 'antd'
 import Img from '@/static/img.png'
+import eImg from '@/static/error.png'
 
 const File = styled.div`
   width: 100%;
@@ -18,17 +20,18 @@ const File = styled.div`
   overflow: hidden;
   max-width: 130px;
 `
-const Image = styled.img`
-  height: 80px;
-  width: 80px;
-  object-fit: cover;
-`
+// const Image = styled.img`
+//   height: 80px;
+//   width: 80px;
+//   object-fit: cover;
+// `
 const Text = styled.div`
   font-size: 12px;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  cursor: pointer;
   /* margin-top: 6px; */
 `
 
@@ -38,10 +41,27 @@ type FileProps = {
   name: string
 }
 export default (props: FileProps) => {
+  const nameClick = (n: string) => {
+    const textarea = document.createElement('textarea')
+    document.body.appendChild(textarea)
+    textarea.value = n
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+  }
   return (
     <File>
-      <Image src={props.url ? props.url : Img} />
-      <Text> {props.name} </Text>
+      {/* props.url ? props.url : */}
+      <Image
+        width={80}
+        height={80}
+        src={Img}
+        preview={{
+          src: props.url
+        }}
+        fallback={eImg}
+      ></Image>
+      <Text onClick={() => nameClick(props.name)}> {props.name} </Text>
     </File>
   )
 }

@@ -43,14 +43,21 @@ export default () => {
   }
 
   // 计算网格布局
-  const computedfileContentGrid = () => {
-    requestAnimationFrame(() => {
-      const { clientWidth, clientHight } = fileContentRef.current as any
-      const rol = Math.floor(clientWidth / 130)
-      setGap((clientHight - 130 * rol) / 7)
-      setCol(rol)
-    })
-  }
+  const computedfileContentGrid = (() => {
+    let flag = false
+    return function () {
+      if (flag) return
+      flag = true
+      requestAnimationFrame(() => {
+        const { clientWidth } = fileContentRef.current as any
+        const rol = Math.floor(clientWidth / 130)
+        setGap((clientWidth - 130 * rol) / 7)
+        setCol(rol)
+        flag = false
+      })
+    }
+  })()
+
   useEffect(() => {
     getImglist()
     computedfileContentGrid()
