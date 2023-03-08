@@ -54,3 +54,26 @@ export const getFilesList = () => {
 export const getImgUrl = (name: string) => {
   return `/api/media?name=${name}`
 }
+
+/**
+ * 删除图片
+ */
+export const postDelImg = (ids: string[]) => {
+  return new Promise((resolve, reject) => {
+    fetch('/api/media/del', {
+      headers: {
+        'content-type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(ids)
+    }).then((r) => {
+      r.json()
+        .then((d) => {
+          resolve(d)
+        })
+        .catch((e) => {
+          reject(e)
+        })
+    })
+  })
+}

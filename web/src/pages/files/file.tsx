@@ -48,6 +48,7 @@ export default (props: FileProps) => {
     textarea.select()
     document.execCommand('copy')
     document.body.removeChild(textarea)
+    message.success('已复制: ' + n)
   }
   return (
     <File>
@@ -55,7 +56,7 @@ export default (props: FileProps) => {
       <Image
         width={80}
         height={80}
-        src={Img}
+        src={props.url}
         preview={{
           src: props.url
         }}

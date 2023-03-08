@@ -1,9 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react'
+import { Checkbox, message } from 'antd'
+import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import styled from 'styled-components'
+
+import { getFilesList, getImgUrl, postDelImg } from '@/api/file'
 import File from './file'
 import FunBar from './funBar'
-import { useNavigate } from 'react-router-dom'
-import { getFilesList, getImgUrl } from '@/api/file'
+import { multDownloadImgZip } from '@/utils/zipDownload'
 
 const Box = styled.div`
   padding: 12px;
@@ -14,6 +17,8 @@ const FilesContainer = styled.div`
   border: 1px solid #ddd;
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
+  min-width: 156px;
 `
 const FilesContent = styled.div<{
   gap?: number
@@ -21,25 +26,77 @@ const FilesContent = styled.div<{
 }>`
   width: 100%;
   display: grid;
-  gap: ${(props) => props.gap + 'px'};
-  grid-template-columns: ${(props) =>
-    `repeat(${props.col}, 1fr)` || `repeat(7, 1fr)`};
+  column-gap: ${(props) => props.gap + 'px'};
+  grid-template-columns: ${(props) => `repeat(${props.col}, 1fr)`};
   border-top: 1px solid #ddd;
   padding: 12px;
   box-sizing: border-box;
+  place-items: center;
 `
-export default () => {
-  const [state, setState] = useState(false)
-  const [files, setFiles] = useState([])
+
+const FileBox = styled.div`
+  width: 100%;
+  height: 130px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: cneter;
+`
+const FileEditBar = styled.div`
+  position: absolute;
+  top: 0;
+  right: 0;
+`
+
+const Files = () => {
+  const fileContentRef = useRef(null)
+  const [editState, setEditState] = useState(false)
+  const [files, setFiles] = useState<any[]>([])
   const [col, setCol] = useState(7)
   const [gap, setGap] = useState(0)
-  const fileContentRef = useRef(null)
+  // const [checkSet, checkSetArr] = useState(new Set<string>())
+  const checkSet = new Set<string>()
+
   const getImglist = () => {
     getFilesList().then((r: any) => {
       if (r.success) {
         setFiles(r.data)
       }
     })
+  }
+
+  const delImgHandle = async () => {
+    if (checkSet.size === 0) return
+    const res: any = await postDelImg([...checkSet])
+    if (res.success) {
+      message.success('删除成功')
+      getImglist()
+    } else {
+      message.error('删除失败')
+    }
+  }
+
+  const checkBoxChange = (e: CheckboxChangeEvent, id: string) => {
+    if (e.target.checked) {
+      checkSet.add(id)
+    } else {
+      checkSet.delete(id)
+    }
+  }
+
+  const downloadHandle = () => {
+    if (checkSet.size === 0) return
+    const imgList: string[] = []
+    checkSet.forEach((e) => {
+      const o = files.find((v) => v.id === e)
+      if (o) {
+        imgList.push(getImgUrl(o.name))
+      }
+    })
+
+    multDownloadImgZip(imgList)
+    checkSet.clear()
   }
 
   // 计算网格布局
@@ -50,8 +107,9 @@ export default () => {
       flag = true
       requestAnimationFrame(() => {
         const { clientWidth } = fileContentRef.current as any
-        const rol = Math.floor(clientWidth / 130)
-        setGap((clientWidth - 130 * rol) / 7)
+        const w = clientWidth - 24
+        const rol = Math.floor(w / 130)
+        setGap((w - 130 * rol - 1) / rol)
         setCol(rol)
         flag = false
       })
@@ -67,23 +125,33 @@ export default () => {
     }
   }, [])
 
-  setTimeout(() => {
-    setState(true)
-  }, 2000)
   return (
     <Box>
       <FilesContainer ref={fileContentRef}>
-        <FunBar onSuccess={getImglist}></FunBar>
+        <FunBar
+          onSuccess={getImglist}
+          setEditState={(flag: boolean) => {
+            checkSet.clear()
+            setEditState(flag)
+          }}
+          editState={editState}
+          onDel={delImgHandle}
+          onDownload={downloadHandle}
+        ></FunBar>
         <FilesContent col={col} gap={gap}>
           <>
             {files.map((e: any) => {
               return (
-                <File
-                  name={e.name}
-                  id={e.id}
-                  key={e.id}
-                  url={getImgUrl(e.name)}
-                ></File>
+                <FileBox key={e.id}>
+                  {editState ? (
+                    <FileEditBar>
+                      <Checkbox
+                        onChange={($e) => checkBoxChange($e, e.id)}
+                      ></Checkbox>
+                    </FileEditBar>
+                  ) : undefined}
+                  <File name={e.name} id={e.id} url={getImgUrl(e.name)}></File>
+                </FileBox>
               )
             })}
           </>
@@ -92,3 +160,5 @@ export default () => {
     </Box>
   )
 }
+
+export default Files
