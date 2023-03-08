@@ -1,10 +1,33 @@
 import fs from 'fs'
 import { FILE_PATH } from '../../config/index'
-const files = fs.readdirSync(FILE_PATH)
-console.log('当前资源目录下存在' + files.length + '个文件')
-const data: string[] = [...files]
-export const saveFileName = (name: string) => {
-  data.push(name)
+import DataSource from '../data/loader'
+DataSource.install()
+const jsonData = fs.readFileSync(DataSource.dbPath).toString()
+const data: FileRecord[] = jsonData.trim() === '' ? [] : JSON.parse(jsonData)
+console.log('当前资源目录下存在' + data.length + '个文件')
+
+type FileRecord = {
+  id: string
+  name: string
+  upload_time?: Date | ''
+  modify_time?: Date | ''
+  size?: number | 0
+  mime?: string | ''
+  isDel?: 0 | 1
+}
+
+setInterval(() => {
+  fs.writeFile(DataSource.dbPath, JSON.stringify(data), (err) => {
+    if (err) {
+      console.log(err)
+      return
+    }
+    console.log('文件保存')
+  })
+}, 60000)
+
+export const saveFileName = (d: FileRecord) => {
+  data.push(d)
 }
 
 /**
@@ -14,13 +37,7 @@ export const saveFileName = (name: string) => {
  * @returns
  */
 export const getFileList = (pageNum: number = 0, pageSize: number = 10) => {
-  return data.slice(pageNum, pageSize).map((e) => {
-    const c_i = e.indexOf('-')
-    return {
-      id: e.substring(0, c_i),
-      name: e
-    }
-  })
+  return data.filter((e) => e.isDel !== 1) // .slice(pageNum, pageSize)
 }
 
 /**
@@ -37,4 +54,19 @@ export const getFileDataByName = (name: string) => {
       resovle(data)
     })
   })
+}
+
+/**
+ * 删除
+ * @param ids
+ */
+export const delFileByData = (ids: string[]) => {
+  let count = 0
+  data.forEach((e) => {
+    if (ids.includes(e.id)) {
+      e.isDel = 1
+      count++
+    }
+  })
+  return count
 }

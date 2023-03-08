@@ -5,7 +5,8 @@ import { FILE_PATH } from '../../config/index'
 import {
   saveFileName,
   getFileDataByName,
-  getFileList
+  getFileList,
+  delFileByData
 } from '../server/file-service'
 const multer = require('multer')
 const crypto = require('crypto')
@@ -21,7 +22,8 @@ const storage = multer.diskStorage({
     cb(null, FILE_PATH)
   },
   filename: function (req, file, cb) {
-    const name = getUUID() + '-' + file.originalname
+    const name =
+      getUUID() + '-' + getUUID() + '.' + mime.getExtension(file.mimetype)
     cb(null, name)
   }
 })
@@ -30,7 +32,15 @@ const upload = multer({ storage: storage }).single('file')
 router.post('/file/upload', upload, function (req: Request, res, next) {
   const file = (req as any).file
   if (file) {
-    saveFileName(file.filename)
+    const c_i = file.filename.indexOf('-')
+    saveFileName({
+      id: file.filename.substring(0, c_i),
+      name: file.filename,
+      mime: file.mimetype,
+      size: file.size,
+      upload_time: new Date(),
+      modify_time: ''
+    })
     res.statusCode = 200
     res.send({
       success: true,
@@ -86,6 +96,26 @@ router.get(
       type: 'page',
       data: getFileList(query.pageNum, query.pageSize)
     })
+    res.end()
+  }
+)
+
+router.post(
+  '/media/del',
+  function (req: Request<never, any, string[], never, never>, res) {
+    const param = req.body
+    const n = delFileByData(param)
+    if (n > 0) {
+      res.statusCode = 200
+      res.send({
+        success: true,
+        data: n
+      })
+    } else {
+      res.statusCode = 500
+    }
+
+    res.end()
   }
 )
 
