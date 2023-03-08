@@ -1,8 +1,5 @@
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
-import React from 'react'
-import ReactDom from 'react-dom'
-import { Space, Spin } from 'antd'
 
 /**
  单个图片文件下载
@@ -35,7 +32,6 @@ export function multDownloadImgZip(imgsList: any) {
   const imgs: any = zip.folder(blogTitle)
   const baseList: any = []
   // React
-  console.log(document.body)
 
   // ReactDom.createPortal(
   //   <Space>
