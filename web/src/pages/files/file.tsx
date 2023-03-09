@@ -13,12 +13,14 @@ const File = styled.div`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  /* box-shadow: 0 0 16px 0px rgba(0, 0, 0, 0.2); */
   border-radius: 8px;
   padding: 12px;
   box-sizing: border-box;
   overflow: hidden;
   max-width: 130px;
+  :hover {
+    box-shadow: 0 0 16px 0px rgba(0, 0, 0, 0.1);
+  }
 `
 // const Image = styled.img`
 //   height: 80px;
