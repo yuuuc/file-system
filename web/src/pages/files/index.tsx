@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { getFilesList, getImgUrl, postDelImg } from '@/api/file'
 import File from './file'
 import FunBar from './funBar'
-import { multDownloadImgZip } from '@/utils/zipDownload'
+import { multDownloadImgZip, zipImg } from '@/utils/zipDownload'
 import { LoadingContext } from '@/context/loadingContext'
 
 const Box = styled.div`
@@ -98,8 +98,12 @@ const Files = () => {
       }
     })
     loading.show()
-    multDownloadImgZip(imgList).then(() => {
+    // multDownloadImgZip(imgList).then(() => {
+    //   loading.hide()
+    // })
+    zipImg(imgList).then(() => {
       loading.hide()
+      message.success('下载完成')
     })
     checkSet.clear()
   }

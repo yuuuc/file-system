@@ -1,5 +1,6 @@
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
+import axios, { ResponseType } from 'axios'
 // import { useContext } from 'react'
 // import { LoadingContext } from '@/context/LoadingContext'
 
@@ -75,4 +76,54 @@ export function multDownloadImgZip(imgsList: any) {
       images.src = imgsList[i] // base64的图片url路径
     }
   })
+}
+
+/**
+ *
+ */
+export const zipImg = (imgUrls: string[], zipName?: string) => {
+  return new Promise((resolve, reject) => {
+    let name = '文件cc'
+    if (zipName) {
+      name = zipName
+    }
+    const zip = new JSZip()
+    const imgs: any = zip.folder(name)
+    Promise.all(
+      imgUrls.map(async (e: string) => {
+        const res = await axios.request({
+          url: e,
+          method: 'get',
+          responseType: 'arraybuffer'
+        })
+        // (
+        //   `data:${res.headers['content-type']};base64,` +
+        //   transformArrayBufferToBase64(res.data)
+        // )
+        const type = res.headers['content-type']
+        return {
+          data: res.data,
+          end: type.substring(type.indexOf('/') + 1)
+        }
+      })
+    ).then((res) => {
+      res.forEach((e, i) => {
+        imgs.file(`${i}.${e.end}`, e.data, { base64: true })
+      })
+      zip.generateAsync({ type: 'blob' }).then((content) => {
+        // see FileSaver.js
+        FileSaver.saveAs(content, `${name}.zip`)
+        resolve(true)
+      })
+    })
+  })
+}
+
+function transformArrayBufferToBase64(buffer: ArrayBuffer) {
+  var binary = ''
+  var bytes = new Uint8Array(buffer)
+  for (var len = bytes.byteLength, i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return window.btoa(binary)
 }
