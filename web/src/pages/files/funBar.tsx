@@ -32,6 +32,8 @@ const Button = styled.button`
   border-radius: 6px;
   box-sizing: border-box;
   overflow: hidden;
+  display: flex;
+  align-items: center;
   :active {
     ::before {
       content: '';

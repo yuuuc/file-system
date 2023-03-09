@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useContext } from 'react'
 import { Checkbox, message } from 'antd'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import styled from 'styled-components'
@@ -7,6 +7,7 @@ import { getFilesList, getImgUrl, postDelImg } from '@/api/file'
 import File from './file'
 import FunBar from './funBar'
 import { multDownloadImgZip } from '@/utils/zipDownload'
+import { LoadingContext } from '@/context/loadingContext'
 
 const Box = styled.div`
   padding: 12px;
@@ -57,6 +58,7 @@ const Files = () => {
   const [gap, setGap] = useState(0)
   // const [checkSet, checkSetArr] = useState(new Set<string>())
   const checkSet = new Set<string>()
+  const loading = useContext(LoadingContext)
 
   const getImglist = () => {
     getFilesList().then((r: any) => {
@@ -67,7 +69,7 @@ const Files = () => {
   }
 
   const delImgHandle = async () => {
-    if (checkSet.size === 0) return
+    if (noCheckTips()) return
     const res: any = await postDelImg([...checkSet])
     if (res.success) {
       message.success('删除成功')
@@ -85,8 +87,9 @@ const Files = () => {
     }
   }
 
+  // 下载
   const downloadHandle = () => {
-    if (checkSet.size === 0) return
+    if (noCheckTips()) return
     const imgList: string[] = []
     checkSet.forEach((e) => {
       const o = files.find((v) => v.id === e)
@@ -94,9 +97,20 @@ const Files = () => {
         imgList.push(getImgUrl(o.name))
       }
     })
-
-    multDownloadImgZip(imgList)
+    loading.show()
+    multDownloadImgZip(imgList).then(() => {
+      loading.hide()
+    })
     checkSet.clear()
+  }
+
+  const noCheckTips = (): boolean => {
+    if (checkSet.size > 0) {
+      return false
+    } else {
+      message.info('请选择')
+      return true
+    }
   }
 
   // 计算网格布局

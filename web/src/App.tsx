@@ -4,7 +4,7 @@ import styled from 'styled-components'
 
 import routes from '@/router/index'
 import MenuContainer from '@/component/business/Menu'
-
+import Loading from '@/component/common/loading/index'
 const Container = styled.div`
   display: flex;
   height: 100vh;
@@ -24,6 +24,7 @@ export default () => {
   }, [])
   return (
     <>
+      <Loading />
       <Container>
         {/* <MenuContainer></MenuContainer> */}
         <RouterView>{elements}</RouterView>

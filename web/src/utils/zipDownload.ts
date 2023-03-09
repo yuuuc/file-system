@@ -1,5 +1,9 @@
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
+// import { useContext } from 'react'
+// import { LoadingContext } from '@/context/LoadingContext'
+
+// const loading = useContext(LoadingContext)
 
 // loading
 // https://www.jianshu.com/p/a1f09b640732
@@ -29,42 +33,46 @@ export function downloadImg(imgsrc: string, name: string) {
 imgsList： 存放多张图片路径的数组 base64
 **/
 export function multDownloadImgZip(imgsList: any) {
-  const blogTitle = '文件'
-  const zip = new JSZip()
-  const imgs: any = zip.folder(blogTitle)
-  const baseList: any = []
-  // React
+  return new Promise((resolve, reject) => {
+    const blogTitle = '文件'
+    const zip = new JSZip()
+    const imgs: any = zip.folder(blogTitle)
+    const baseList: any = []
 
-  // ReactDom.createPortal(
-  //   <Space>
-  //     <Spin tip={'loading'}></Spin>
-  //   </Space>,
-  //   document.body
-  // )
-  //   const imgNameList: any = []
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < imgsList.length; i++) {
-    const images = new Image()
-    images.setAttribute('crossOrigin', 'anonymous')
-    images.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = images.width
-      canvas.height = images.height
-      const context: any = canvas.getContext('2d')
-      context.drawImage(images, 0, 0, images.width, images.height)
-      const url = canvas.toDataURL('image/png') // 得到图片的base64编码数据
-      baseList.push(url.substring(22)) // 去掉base64编码前的 data:image/png;base64,
-      if (baseList.length === imgsList.length && baseList.length > 0) {
-        // eslint-disable-next-line no-plusplus
-        for (let k = 0; k < baseList.length; k++) {
-          imgs.file(`${k}.png`, baseList[k], { base64: true })
+    // React
+
+    // ReactDom.createPortal(
+    //   <Space>
+    //     <Spin tip={'loading'}></Spin>
+    //   </Space>,
+    //   document.body
+    // )
+    //   const imgNameList: any = []
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < imgsList.length; i++) {
+      const images = new Image()
+      images.setAttribute('crossOrigin', 'anonymous')
+      images.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = images.width
+        canvas.height = images.height
+        const context: any = canvas.getContext('2d')
+        context.drawImage(images, 0, 0, images.width, images.height)
+        const url = canvas.toDataURL('image/png') // 得到图片的base64编码数据
+        baseList.push(url.substring(22)) // 去掉base64编码前的 data:image/png;base64,
+        if (baseList.length === imgsList.length && baseList.length > 0) {
+          // eslint-disable-next-line no-plusplus
+          for (let k = 0; k < baseList.length; k++) {
+            imgs.file(`${k}.png`, baseList[k], { base64: true })
+          }
+          zip.generateAsync({ type: 'blob' }).then((content) => {
+            // see FileSaver.js
+            FileSaver.saveAs(content, `${blogTitle}.zip`)
+            resolve(true)
+          })
         }
-        zip.generateAsync({ type: 'blob' }).then((content) => {
-          // see FileSaver.js
-          FileSaver.saveAs(content, `${blogTitle}.zip`)
-        })
       }
+      images.src = imgsList[i] // base64的图片url路径
     }
-    images.src = imgsList[i] // base64的图片url路径
-  }
+  })
 }
